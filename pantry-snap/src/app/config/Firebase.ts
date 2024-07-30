@@ -11,12 +11,12 @@ import { getStorage } from "firebase/storage";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: "pantrysnap.firebaseapp.com",
-  projectId: "pantrysnap",
-  storageBucket: "pantrysnap.appspot.com",
-  messagingSenderId: "251058732938",
-  appId: "1:251058732938:web:9346df88e5bd6847e11273",
-  measurementId: "G-SGVM86T9BG"
+  authDomain: "pantry-snap.firebaseapp.com",
+  projectId: "pantry-snap",
+  storageBucket: "pantry-snap.appspot.com",
+  messagingSenderId: "604577139135",
+  appId: "1:604577139135:web:86b02a6c25aaf7c57cf90a",
+  measurementId: "G-ZMEH4KSLPX"
 };
 
 // Initialize Firebase
