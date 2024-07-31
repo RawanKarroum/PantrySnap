@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           flexGrow: 1,
           bgcolor: 'background.default',
           p: 3,
-          marginLeft: '240px', // adjust according to drawerWidth
+          marginLeft: '240px',
         }}
       >
         {children}

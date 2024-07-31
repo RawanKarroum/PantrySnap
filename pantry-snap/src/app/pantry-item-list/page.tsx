@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Button,
   Container,
   List,
   ListItem,
@@ -20,9 +19,9 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon
 } from '@mui/icons-material';
-import Layout from './components/Layout';
-import { fetchPantryItems, addPantryItem, editPantryItem, deletePantryItem } from './services/pantryService';
-import { fetchCategories } from './services/categoryService';
+import Layout from '../components/Layout';
+import { fetchPantryItems, editPantryItem, deletePantryItem } from '../services/pantryService';
+import { fetchCategories } from '../services/categoryService';
 
 interface PantryItem {
   id: string;
@@ -38,10 +37,7 @@ interface Category {
 
 const Home: React.FC = () => {
   const [pantry, setPantry] = useState<PantryItem[]>([]);
-  const [newItem, setNewItem] = useState<string>('');
-  const [newQuantity, setNewQuantity] = useState<number>(0);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const [editItemName, setEditItemName] = useState<string>('');
   const [editItemQuantity, setEditItemQuantity] = useState<number>(0);
@@ -63,19 +59,6 @@ const Home: React.FC = () => {
     };
     fetchCats();
   }, []);
-
-  // Add new item
-  const handleAddItem = async () => {
-    try {
-      await addPantryItem(newItem, newQuantity, selectedCategory);
-      setPantry([...pantry, { id: newItem, name: newItem, quantity: newQuantity, category: selectedCategory }]);
-      setNewItem('');
-      setNewQuantity(0);
-      setSelectedCategory('');
-    } catch (error) {
-      console.error('Error adding item:', error);
-    }
-  };
 
   // Edit existing item
   const handleEditItem = async (id: string) => {
@@ -166,42 +149,6 @@ const Home: React.FC = () => {
             </ListItem>
           ))}
         </List>
-        <Box display="flex" alignItems="center" marginTop={2}>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            label="Add New Item"
-          />
-          <TextField
-            variant="outlined"
-            size="small"
-            type="number"
-            value={newQuantity}
-            onChange={(e) => setNewQuantity(parseInt(e.target.value))}
-            label="Quantity"
-            style={{ marginLeft: 8 }}
-          />
-          <Select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as string)}
-            displayEmpty
-            style={{ marginLeft: 8, minWidth: 120 }}
-          >
-            <MenuItem value="" disabled>
-              Select Category
-            </MenuItem>
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.name}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </Select>
-          <Button variant="contained" color="primary" onClick={handleAddItem} style={{ marginLeft: 8 }}>
-            Add
-          </Button>
-        </Box>
       </Container>
     </Layout>
   );
