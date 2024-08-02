@@ -1,6 +1,7 @@
 'use client';
 
 import { Inter } from 'next/font/google';
+import Head from 'next/head'; 
 import './globals.css';
 import { FirebaseAppProvider } from 'reactfire';
 import { firebaseConfig } from './config/Firebase';
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <FirebaseAppProvider firebaseConfig={firebaseConfig}>
       <html lang="en">
-        <body className={inter.className}>{children}</body>
+        <body className={inter.className} style={{ overflow: 'hidden', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+          {children}
+        </body>
       </html>
     </FirebaseAppProvider>
   );

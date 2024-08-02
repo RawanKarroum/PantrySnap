@@ -1,8 +1,34 @@
 import React from 'react';
-import { Avatar, Box, Drawer, List, ListItem, ListItemText, Toolbar, Typography, Button } from '@mui/material';
+import { Box, Drawer, List, ListItem, ListItemText, Toolbar, Button, createTheme, ThemeProvider, Paper } from '@mui/material';
 import Link from 'next/link';
+import { green, brown, red, grey } from '@mui/material/colors';
 
-const drawerWidth = 240;
+const drawerWidth = 300; // Increased the width of the navbar
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: green[700], // Earthy green
+    },
+    secondary: {
+      main: brown[500], // Earthy brown
+    },
+    error: {
+      main: red[500], // Red for sign out button
+    },
+    background: {
+      default: 'transparent', // Transparent background
+    },
+    text: {
+      primary: grey[900], // Dark text
+      secondary: grey[600], // Grey text
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
+    fontSize: 18, // Increased the font size
+  },
+});
 
 const Navbar: React.FC = () => {
   const menuItems = [
@@ -21,42 +47,60 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-      }}
-    >
-      <Toolbar>
-        <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
-          <Avatar sx={{ width: 56, height: 56, mb: 2 }} />
-          <Typography variant="h6">User Name</Typography>
-        </Box>
-      </Toolbar>
-      <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
-        <List>
-          {menuItems.map((item) => (
-            <ListItem button key={item.text}>
-              <Link href={item.path} passHref>
-                <ListItemText primary={item.text} />
-              </Link>
-            </ListItem>
-          ))}
-        </List>
+    <ThemeProvider theme={theme}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          padding: '32px 0', // Ensure top and bottom padding
+          boxSizing: 'border-box',
+        }}
+      >
+        <Drawer
+          variant="permanent"
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+              color: theme.palette.text.primary,
+              borderRight: `1px solid ${theme.palette.divider}`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              paddingTop: '32px',
+              paddingBottom: '32px',
+              borderRadius: '16px',
+              height: 'calc(100% - 64px)',
+              marginTop: '32px', 
+              marginBottom: '32px', 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+              backdropFilter: 'blur(5px)', 
+            },
+          }}
+        >
+          <Box sx={{ overflow: 'auto', flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>
+            <List sx={{ width: '90%' }}>
+              {menuItems.map((item) => (
+                <Paper elevation={2} sx={{ mb: 2, borderRadius: '10px' }} key={item.text}>
+                  <ListItem button component={Link} href={item.path} sx={{ color: theme.palette.text.primary, justifyContent: 'center', textAlign: 'center' }}>
+                    <ListItemText primary={item.text} sx={{ textAlign: 'center' }} />
+                  </ListItem>
+                </Paper>
+              ))}
+            </List>
+          </Box>
+          <Box sx={{ p: 2, width: '80%', mt: 'auto' }}>
+            <Button variant="contained" color="error" fullWidth onClick={handleSignOut}>
+              SIGN OUT
+            </Button>
+          </Box>
+        </Drawer>
       </Box>
-      <Box sx={{ p: 2 }}>
-        <Link href="/sign-up" passHref>
-          <Button variant="contained" color="primary" fullWidth>
-            Sign Up
-          </Button>
-        </Link>
-        <Button variant="contained" color="secondary" fullWidth onClick={handleSignOut} sx={{ mt: 1 }}>
-          Sign Out
-        </Button>
-      </Box>
-    </Drawer>
+    </ThemeProvider>
   );
 };
 
