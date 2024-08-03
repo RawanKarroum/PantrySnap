@@ -1,37 +1,42 @@
-import { Configuration, OpenAIApi } from "openai-edge";
-import { OpenAIStream, StreamingTextResponse } from "ai";
+import { NextRequest, NextResponse } from 'next/server';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
+import * as dotenv from 'dotenv';
 
-export const runtime = 'edge';
+dotenv.config();
 
-console.log('API Key:', process.env.NEXT_PUBLIC_OPENAI_API_KEY);
+// Create a client using the environment variable for authentication
+const client = new ImageAnnotatorClient();
 
-const configuration = new Configuration({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, 
-});
-
-const openai = new OpenAIApi(configuration);
-
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { image } = await request.json();
-    console.log('Received image for analysis:', image);
+    const { imageUrl } = await req.json();
 
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
-      stream: true,
-      max_tokens: 4096,
-      messages: [
-        {
-          role: "user",
-          content: `What's in this image? ${image}`
-        }
-      ]
-    });
+    if (!imageUrl) {
+      return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
+    }
 
-    const stream = OpenAIStream(response);
-    return new StreamingTextResponse(stream);
-  } catch (error) {
-    console.error('Error during image analysis:', error);
-    return new Response('Error processing the request', { status: 500 });
+    // Perform object localization on the image file
+    const request = {
+      image: { source: { imageUri: imageUrl } },
+      features: [{ type: 'OBJECT_LOCALIZATION' }],
+    };
+    const [result] = await client.annotateImage(request);
+
+    const objects = result.localizedObjectAnnotations || [];
+
+    if (objects.length === 0) {
+      return NextResponse.json('No objects found', { status: 200 });
+    }
+
+    // Map the objects to a simpler format
+    const objectDetails = objects.map((object: any) => ({
+      name: object.name,
+      confidence: object.score,
+    }));
+
+    return NextResponse.json(objectDetails, { status: 200 });
+  } catch (error: any) {
+    console.error('Error during object localization:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

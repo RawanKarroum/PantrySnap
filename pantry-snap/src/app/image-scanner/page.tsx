@@ -1,31 +1,19 @@
 'use client';
+
 import { ChangeEvent, useState, FormEvent } from "react";
 import { Box, Button, Container, Typography } from '@mui/material';
 import Layout from '../components/Layout'; 
+import { storage } from '../config/Firebase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function ImageScanner() {
-  const [image, setImage] = useState<string>("");
-  const [openAIResponse, setOpenAIResponse] = useState<string>("");
+  const [image, setImage] = useState<File | null>(null);
+  const [objects, setObjects] = useState<Array<{ name: string, confidence: number }>>([]);
 
-  // Image upload logic
+  // Handle image file change
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.target.files === null) {
-      window.alert("No file selected. Choose a file.");
-      return;
-    }
-    const file = event.target.files[0];
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setImage(reader.result);
-      }
-    }
-
-    reader.onerror = (error) => {
-      console.log("error: " + error);
+    if (event.target.files && event.target.files.length > 0) {
+      setImage(event.target.files[0]);
     }
   }
 
@@ -33,34 +21,33 @@ export default function ImageScanner() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (image === "") {
+    if (!image) {
       alert("Upload an image.");
       return;
     }
 
-    // POST api/analyzeImage
-    await fetch("/api/analyzeImage", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        image: image
-      })
-    })
-    .then(async (response: any) => {
-      const reader = response.body?.getReader();
-      setOpenAIResponse("");
-      while (true) {
-        const { done, value } = await reader?.read();
-        if (done) break;
-        const chunk = new TextDecoder().decode(value);
-        setOpenAIResponse((prev) => prev + chunk);
-      }
-    })
-    .catch((error) => {
-      console.error('Error during analysis:', error);
-    });
+    try {
+      // Upload the image to Firebase
+      const imageRef = ref(storage, `images/${image.name}`);
+      await uploadBytes(imageRef, image);
+      const imageUrl = await getDownloadURL(imageRef);
+
+      console.log("Image URL:", imageUrl);
+
+      // Call the classifyImage API
+      const response = await fetch("/api/analyzeImage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ imageUrl })
+      });
+
+      const data = await response.json();
+      setObjects(data);
+    } catch (error) {
+      console.error('Error during image classification:', error);
+    }
   }
 
   return (
@@ -80,13 +67,18 @@ export default function ImageScanner() {
               type="submit"
               sx={{ marginTop: 2 }}
             >
-              Ask ChatGPT To Analyze Your Image
+              Classify Image
             </Button>
           </form>
-          {openAIResponse && (
+          {objects.length > 0 && (
             <Box marginTop={4} width="100%">
               <Typography variant="h5" gutterBottom>AI Response</Typography>
-              <Typography variant="body1">{openAIResponse}</Typography>
+              {objects.map((object, index) => (
+                <div key={index}>
+                  <Typography variant="body1">Name: {object.name}</Typography>
+                  <Typography variant="body1">Confidence: {(object.confidence * 100).toFixed(2)}%</Typography>
+                </div>
+              ))}
             </Box>
           )}
         </Box>
