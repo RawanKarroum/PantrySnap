@@ -24,7 +24,6 @@ import Layout from '../components/Layout';
 import { storage } from '../config/Firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { fetchCategories } from '../services/categoryService';
-import { addPantryItem } from '../services/pantryService'; // Ensure addPantryItem is imported from pantryService
 import { green, brown, red, grey } from '@mui/material/colors';
 
 const theme = createTheme({
@@ -151,11 +150,9 @@ const ImageScanner: React.FC = () => {
     setImageUrl(null);
   };
 
-  const handleSave = async () => {
-    // Save the item to the pantry
-    if (objects[0]?.name && quantity > 0 && selectedCategory) {
-      await addPantryItem(objects[0].name, quantity, selectedCategory);
-    }
+  const handleSave = () => {
+    // Handle saving the data
+    console.log('Saving:', { name: objects[0]?.name, quantity, category: selectedCategory });
     setIsResultModalOpen(false);
     handleCancelImage();
   };
@@ -196,7 +193,7 @@ const ImageScanner: React.FC = () => {
             </Box>
 
             <Dialog open={isCameraOpen} onClose={handleCloseCamera} maxWidth="sm" fullWidth>
-              <DialogTitle>Take a Photo</DialogTitle>
+              <DialogTitle className="merienda-font">Take a Photo</DialogTitle>
               <DialogContent>
                 <Camera 
                   ref={camera} 
@@ -210,10 +207,10 @@ const ImageScanner: React.FC = () => {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleTakePhoto} color="primary">
+                <Button onClick={handleTakePhoto} color="primary" className="merienda-font">
                   Take Photo
                 </Button>
-                <Button onClick={handleCloseCamera} color="secondary">
+                <Button onClick={handleCloseCamera} color="secondary" className="merienda-font">
                   Cancel
                 </Button>
               </DialogActions>
