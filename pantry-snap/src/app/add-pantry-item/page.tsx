@@ -1,10 +1,50 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box, TextField, Button, MenuItem, Select } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  MenuItem,
+  Select,
+  Paper,
+  createTheme,
+  ThemeProvider
+} from '@mui/material';
 import { addPantryItem } from '../services/pantryService';
 import { fetchCategories } from '../services/categoryService';
 import Layout from '../components/Layout';
+import { green, brown, red, grey } from '@mui/material/colors';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: green[700],
+    },
+    secondary: {
+      main: brown[500],
+    },
+    error: {
+      main: red[500],
+    },
+    background: {
+      default: 'transparent',
+    },
+    text: {
+      primary: grey[900],
+      secondary: grey[600],
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
+    fontSize: 18,
+    allVariants: {
+      textTransform: 'capitalize',
+    },
+  },
+});
 
 interface Category {
   id: string;
@@ -33,49 +73,62 @@ const AddPantryItem: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <Container>
-        <Typography variant="h4" gutterBottom>
-          Add Pantry Item
-        </Typography>
-        <Box display="flex" alignItems="center" marginTop={2}>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            label="Add New Item"
-          />
-          <TextField
-            variant="outlined"
-            size="small"
-            type="number"
-            value={newQuantity}
-            onChange={(e) => setNewQuantity(parseInt(e.target.value))}
-            label="Quantity"
-            style={{ marginLeft: 8 }}
-          />
-          <Select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as string)}
-            displayEmpty
-            style={{ marginLeft: 8, minWidth: 120 }}
-          >
-            <MenuItem value="" disabled>
-              Select Category
-            </MenuItem>
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.name}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </Select>
-          <Button variant="contained" color="primary" onClick={handleAddItem} style={{ marginLeft: 8 }}>
-            Add
-          </Button>
+    <ThemeProvider theme={theme}>
+      <Layout>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '32px 0', backgroundColor: 'transparent', width: '100%' }}>
+          <Paper elevation={3} sx={{ padding: 4, borderRadius: '10px', backgroundColor: 'rgba(255, 255, 255, 0.9)', width: '100%', maxWidth: '1000px', maxHeight: '75vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', padding: 2 }} className="pacifico-font">
+              Add Pantry Item
+            </Typography>
+            <Box display="flex" alignItems="center" flexDirection="column" marginTop={2}>
+              <TextField
+                variant="outlined"
+                size="small"
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                label="Add New Item"
+                fullWidth
+                sx={{ marginBottom: 2 }}
+                InputLabelProps={{ className: 'merienda-label' }}
+                InputProps={{ className: 'merienda-font' }}
+              />
+              <TextField
+                variant="outlined"
+                size="small"
+                type="number"
+                value={newQuantity}
+                onChange={(e) => setNewQuantity(parseInt(e.target.value))}
+                label="Quantity"
+                fullWidth
+                sx={{ marginBottom: 2 }}
+                InputLabelProps={{ className: 'merienda-label' }}
+                InputProps={{ className: 'merienda-font' }}
+              />
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value as string)}
+                displayEmpty
+                fullWidth
+                sx={{ marginBottom: 2 }}
+                className="merienda-font"
+              >
+                <MenuItem value="" disabled>
+                  Select Category
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.name} className="merienda-font">
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button variant="contained" color="primary" onClick={handleAddItem} fullWidth className="merienda-font">
+                Add
+              </Button>
+            </Box>
+          </Paper>
         </Box>
-      </Container>
-    </Layout>
+      </Layout>
+    </ThemeProvider>
   );
 };
 

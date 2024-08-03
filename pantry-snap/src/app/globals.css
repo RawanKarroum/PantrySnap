@@ -30,3 +30,12 @@ body {
   font-family: 'Merienda', cursive;
   font-size: 1rem; 
 }
+
+.merienda-font {
+  font-family: 'Merienda', cursive;
+}
+
+.merienda-label {
+  font-family: 'Merienda', cursive;
+  font-size: 1rem;
+}

@@ -1,38 +1,112 @@
 'use client';
 
-import { ChangeEvent, useState, FormEvent } from "react";
-import { Box, Button, Container, Typography } from '@mui/material';
+import React, { useState, useRef, ChangeEvent, useEffect } from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  createTheme,
+  ThemeProvider,
+  IconButton
+} from '@mui/material';
+import { Camera } from "react-camera-pro";
+import { Check as CheckIcon, Clear as ClearIcon } from '@mui/icons-material';
 import Layout from '../components/Layout'; 
 import { storage } from '../config/Firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { fetchCategories } from '../services/categoryService';
+import { addPantryItem } from '../services/pantryService'; // Ensure addPantryItem is imported from pantryService
+import { green, brown, red, grey } from '@mui/material/colors';
 
-export default function ImageScanner() {
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: green[700],
+    },
+    secondary: {
+      main: brown[500],
+    },
+    error: {
+      main: red[500],
+    },
+    background: {
+      default: 'transparent',
+    },
+    text: {
+      primary: grey[900],
+      secondary: grey[600],
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
+    fontSize: 18,
+    allVariants: {
+      textTransform: 'capitalize',
+    },
+  },
+});
+
+const ImageScanner: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
-  const [objects, setObjects] = useState<Array<{ name: string, confidence: number }>>([]);
+  const [cameraImage, setCameraImage] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [objects, setObjects] = useState<Array<{ name: string }>>([]);
+  const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
+  const [isResultModalOpen, setIsResultModalOpen] = useState<boolean>(false);
+  const camera = useRef<any>(null);
+  const [quantity, setQuantity] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [categories, setCategories] = useState<Array<{ id: string, name: string }>>([]);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCats = async () => {
+      const cats = await fetchCategories();
+      setCategories(cats);
+    };
+    fetchCats();
+  }, []);
 
   // Handle image file change
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files && event.target.files.length > 0) {
       setImage(event.target.files[0]);
+      setCameraImage(null); // Clear the camera image if a file is selected
+      setImageUrl(URL.createObjectURL(event.target.files[0]));
     }
   }
 
-  // Handle form submission
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!image) {
-      alert("Upload an image.");
+  const handleSubmit = async () => {
+    if (!image && !cameraImage) {
+      alert("Upload an image or take a photo.");
       return;
     }
 
     try {
-      // Upload the image to Firebase
-      const imageRef = ref(storage, `images/${image.name}`);
-      await uploadBytes(imageRef, image);
-      const imageUrl = await getDownloadURL(imageRef);
+      let uploadedImageUrl = '';
 
-      console.log("Image URL:", imageUrl);
+      if (image) {
+        // Upload the image to Firebase
+        const imageRef = ref(storage, `images/${image.name}`);
+        await uploadBytes(imageRef, image);
+        uploadedImageUrl = await getDownloadURL(imageRef);
+      } else if (cameraImage) {
+        const imageBlob = await fetch(cameraImage).then(res => res.blob());
+        const imageRef = ref(storage, `images/camera_${new Date().getTime()}.jpg`);
+        await uploadBytes(imageRef, imageBlob);
+        uploadedImageUrl = await getDownloadURL(imageRef);
+      }
+
+      console.log("Image URL:", uploadedImageUrl);
 
       // Call the classifyImage API
       const response = await fetch("/api/analyzeImage", {
@@ -40,49 +114,158 @@ export default function ImageScanner() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ imageUrl })
+        body: JSON.stringify({ imageUrl: uploadedImageUrl })
       });
 
       const data = await response.json();
-      setObjects(data);
+      setObjects(data.map((obj: { name: string }) => ({ name: obj.name })));
+      setIsResultModalOpen(true);
     } catch (error) {
       console.error('Error during image classification:', error);
     }
   }
 
+  const handleOpenCamera = () => {
+    setIsCameraOpen(true);
+  };
+
+  const handleCloseCamera = () => {
+    setIsCameraOpen(false);
+  };
+
+  const handleTakePhoto = () => {
+    const photo = camera.current.takePhoto();
+    setCameraImage(photo);
+    setImage(null);
+    setImageUrl(photo);
+    handleCloseCamera();
+  };
+
+  const handleConfirmImage = async () => {
+    await handleSubmit();
+  };
+
+  const handleCancelImage = () => {
+    setImage(null);
+    setCameraImage(null);
+    setImageUrl(null);
+  };
+
+  const handleSave = async () => {
+    // Save the item to the pantry
+    if (objects[0]?.name && quantity > 0 && selectedCategory) {
+      await addPantryItem(objects[0].name, quantity, selectedCategory);
+    }
+    setIsResultModalOpen(false);
+    handleCancelImage();
+  };
+
   return (
-    <Layout>
-      <Container>
-        <Typography variant="h4" gutterBottom>Image Scanner</Typography>
-        <Box display="flex" flexDirection="column" alignItems="center" marginTop={2}>
-          <form onSubmit={handleSubmit}>
-            <Button variant="contained" component="label">
-              Choose File
-              <input type="file" hidden onChange={handleFileChange} />
-            </Button>
-            {image && <Typography variant="body1" marginTop={2}>Image selected</Typography>}
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              sx={{ marginTop: 2 }}
-            >
-              Classify Image
-            </Button>
-          </form>
-          {objects.length > 0 && (
-            <Box marginTop={4} width="100%">
-              <Typography variant="h5" gutterBottom>AI Response</Typography>
-              {objects.map((object, index) => (
-                <div key={index}>
-                  <Typography variant="body1">Name: {object.name}</Typography>
-                  <Typography variant="body1">Confidence: {(object.confidence * 100).toFixed(2)}%</Typography>
-                </div>
-              ))}
+    <ThemeProvider theme={theme}>
+      <Layout>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '32px 0', backgroundColor: 'transparent', width: '100%' }}>
+          <Paper elevation={3} sx={{ padding: 4, borderRadius: '10px', backgroundColor: 'rgba(255, 255, 255, 0.9)', width: '100%', maxWidth: '1000px', maxHeight: '75vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', padding: 2 }} className="pacifico-font">
+              Image Scanner
+            </Typography>
+            <Box display="flex" alignItems="center" flexDirection="column" marginTop={2}>
+              {!imageUrl && (
+                <form style={{ width: '100%' }}>
+                  <Button variant="contained" component="label" fullWidth className="merienda-font" sx={{ marginBottom: 2 }}>
+                    Choose File
+                    <input type="file" hidden onChange={handleFileChange} />
+                  </Button>
+                  <Button variant="contained" color="primary" onClick={handleOpenCamera} fullWidth className="merienda-font" sx={{ marginBottom: 2 }}>
+                    Open Camera
+                  </Button>
+                </form>
+              )}
+              {imageUrl && (
+                <>
+                  <img src={imageUrl} alt="Selected" style={{ maxWidth: '100%', maxHeight: '400px', marginBottom: '16px' }} />
+                  <Box display="flex" justifyContent="space-around" width="100%">
+                    <IconButton onClick={handleConfirmImage} color="primary">
+                      <CheckIcon />
+                    </IconButton>
+                    <IconButton onClick={handleCancelImage} color="error">
+                      <ClearIcon />
+                    </IconButton>
+                  </Box>
+                </>
+              )}
             </Box>
-          )}
+
+            <Dialog open={isCameraOpen} onClose={handleCloseCamera} maxWidth="sm" fullWidth>
+              <DialogTitle>Take a Photo</DialogTitle>
+              <DialogContent>
+                <Camera 
+                  ref={camera} 
+                  aspectRatio={16 / 9} 
+                  errorMessages={{
+                    noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
+                    permissionDenied: 'Permission denied. Please refresh and give camera permission.',
+                    switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
+                    canvas: 'Canvas is not supported.',
+                  }}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleTakePhoto} color="primary">
+                  Take Photo
+                </Button>
+                <Button onClick={handleCloseCamera} color="secondary">
+                  Cancel
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            <Dialog open={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} fullWidth maxWidth="sm">
+              <DialogTitle className="merienda-font">{objects[0]?.name}</DialogTitle>
+              <DialogContent>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  label="Quantity"
+                  fullWidth
+                  sx={{ marginBottom: 2 }}
+                  InputLabelProps={{ className: 'merienda-label' }}
+                  InputProps={{ className: 'merienda-font' }}
+                />
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value as string)}
+                  displayEmpty
+                  fullWidth
+                  sx={{ marginBottom: 2 }}
+                  className="merienda-font"
+                >
+                  <MenuItem value="" disabled>
+                    Select Category
+                  </MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.name} className="merienda-font">
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleSave} color="primary" className="merienda-font">
+                  Save
+                </Button>
+                <Button onClick={() => setIsResultModalOpen(false)} color="secondary" className="merienda-font">
+                  Cancel
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Paper>
         </Box>
-      </Container>
-    </Layout>
+      </Layout>
+    </ThemeProvider>
   );
-}
+};
+
+export default ImageScanner;
