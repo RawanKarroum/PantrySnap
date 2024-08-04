@@ -2,8 +2,6 @@
 
 import React, { useState, useRef, ChangeEvent, useEffect } from "react";
 import {
-  Container,
-  Typography,
   Box,
   Button,
   Paper,
@@ -14,9 +12,9 @@ import {
   TextField,
   Select,
   MenuItem,
-  createTheme,
   ThemeProvider,
-  IconButton
+  IconButton,
+  Typography,
 } from '@mui/material';
 import { Camera } from "react-camera-pro";
 import { Check as CheckIcon, Clear as ClearIcon } from '@mui/icons-material';
@@ -24,7 +22,9 @@ import Layout from '../components/Layout';
 import { storage } from '../config/Firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { fetchCategories } from '../services/categoryService';
+import { addPantryItem } from '../services/pantryService';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
@@ -66,7 +66,6 @@ const ImageScanner: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [categories, setCategories] = useState<Array<{ id: string, name: string }>>([]);
 
-  // Fetch categories
   useEffect(() => {
     const fetchCats = async () => {
       const cats = await fetchCategories();
@@ -75,11 +74,10 @@ const ImageScanner: React.FC = () => {
     fetchCats();
   }, []);
 
-  // Handle image file change
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files && event.target.files.length > 0) {
       setImage(event.target.files[0]);
-      setCameraImage(null); // Clear the camera image if a file is selected
+      setCameraImage(null);
       setImageUrl(URL.createObjectURL(event.target.files[0]));
     }
   }
@@ -94,7 +92,6 @@ const ImageScanner: React.FC = () => {
       let uploadedImageUrl = '';
 
       if (image) {
-        // Upload the image to Firebase
         const imageRef = ref(storage, `images/${image.name}`);
         await uploadBytes(imageRef, image);
         uploadedImageUrl = await getDownloadURL(imageRef);
@@ -107,7 +104,6 @@ const ImageScanner: React.FC = () => {
 
       console.log("Image URL:", uploadedImageUrl);
 
-      // Call the classifyImage API
       const response = await fetch("/api/analyzeImage", {
         method: "POST",
         headers: {
@@ -150,9 +146,18 @@ const ImageScanner: React.FC = () => {
     setImageUrl(null);
   };
 
-  const handleSave = () => {
-    // Handle saving the data
-    console.log('Saving:', { name: objects[0]?.name, quantity, category: selectedCategory });
+  const handleSave = async () => {
+    const itemName = objects[0]?.name;
+    if (itemName && quantity > 0 && selectedCategory) {
+      try {
+        await addPantryItem(itemName, quantity, selectedCategory);
+        console.log('Item added to pantry:', { name: itemName, quantity, category: selectedCategory });
+      } catch (error) {
+        console.error('Error adding item to pantry:', error);
+      }
+    } else {
+      alert("Please provide valid quantity and category.");
+    }
     setIsResultModalOpen(false);
     handleCancelImage();
   };

@@ -38,6 +38,7 @@ const Navbar: React.FC = () => {
     { text: 'Add Shopping List Item', path: '/add-shopping-list-item' },
     { text: 'Category List', path: '/category-list' },
     { text: 'Add Category', path: '/add-category' },
+    { text: 'Generate Recipes', path: '/recipe' }
   ];
 
   const handleSignOut = () => {
