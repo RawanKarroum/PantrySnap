@@ -1,3 +1,4 @@
+// src/pages/AddShoppingListItem.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -11,12 +12,12 @@ import {
   Button,
   createTheme,
   ThemeProvider,
-  Container
 } from '@mui/material';
 import Layout from '../components/Layout';
 import { addShoppingListItem } from '../services/shoppingService';
 import { fetchCategories } from '../services/categoryService';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext'; // Import useUser
 
 const theme = createTheme({
   palette: {
@@ -56,20 +57,25 @@ const AddShoppingListItem: React.FC = () => {
   const [newQuantity, setNewQuantity] = useState<number>(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const { user } = useUser(); // Use the useUser hook to get the current user
 
   useEffect(() => {
     const fetchCats = async () => {
-      const cats = await fetchCategories();
-      setCategories(cats);
+      if (user) {
+        const cats = await fetchCategories(user.uid);
+        setCategories(cats);
+      }
     };
     fetchCats();
-  }, []);
+  }, [user]);
 
   const handleAddItem = async () => {
-    await addShoppingListItem(newItem, newQuantity, selectedCategory);
-    setNewItem('');
-    setNewQuantity(0);
-    setSelectedCategory('');
+    if (user) {
+      await addShoppingListItem(newItem, newQuantity, selectedCategory, user.uid);
+      setNewItem('');
+      setNewQuantity(0);
+      setSelectedCategory('');
+    }
   };
 
   return (
@@ -116,7 +122,7 @@ const AddShoppingListItem: React.FC = () => {
                     Select Category
                   </MenuItem>
                   {categories.map((category) => (
-                    <MenuItem key={category.id} value={category.name} > 
+                    <MenuItem key={category.id} value={category.name}>
                       {category.name}
                     </MenuItem>
                   ))}

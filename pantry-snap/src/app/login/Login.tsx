@@ -90,7 +90,7 @@ const Login: React.FC = () => {
           }}
         >
           <Typography variant="h5" className="pacifico-font" sx={{ mb: 2, color: 'text.primary' }}>
-            Pantry Tracker
+            Pantry Snap
           </Typography>
           <Button
             variant="contained"

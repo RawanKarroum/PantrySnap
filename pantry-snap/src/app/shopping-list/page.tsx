@@ -1,3 +1,4 @@
+// src/pages/ShoppingList.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -13,18 +14,19 @@ import {
   Paper,
   Button,
   createTheme,
-  ThemeProvider
+  ThemeProvider,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
 } from '@mui/icons-material';
 import Layout from '../components/Layout';
 import { fetchShoppingListItems, editShoppingListItem, deleteShoppingListItem } from '../services/shoppingService';
 import { fetchCategories } from '../services/categoryService';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext'; // Import useUser
 
 const theme = createTheme({
   palette: {
@@ -73,35 +75,42 @@ const ShoppingList: React.FC = () => {
   const [editItemName, setEditItemName] = useState<string>('');
   const [editItemQuantity, setEditItemQuantity] = useState<number>(0);
   const [editItemCategory, setEditItemCategory] = useState<string>('');
+  const { user } = useUser(); // Use the useUser hook to get the current user
 
   // Fetch shopping list items and categories
   useEffect(() => {
     const fetchItems = async () => {
-      const items = await fetchShoppingListItems();
-      setShoppingList(items);
+      if (user) {
+        const items = await fetchShoppingListItems(user.uid);
+        setShoppingList(items);
+      }
     };
     fetchItems();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const fetchCats = async () => {
-      const cats = await fetchCategories();
-      setCategories(cats);
+      if (user) {
+        const cats = await fetchCategories(user.uid);
+        setCategories(cats);
+      }
     };
     fetchCats();
-  }, []);
+  }, [user]);
 
   // Edit existing item
   const handleEditItem = async (id: string) => {
     try {
-      await editShoppingListItem(id, editItemName, editItemQuantity, editItemCategory);
-      setShoppingList(
-        shoppingList.map((item) => (item.id === id ? { ...item, name: editItemName, quantity: editItemQuantity, category: editItemCategory } : item))
-      );
-      setEditItemId(null);
-      setEditItemName('');
-      setEditItemQuantity(0);
-      setEditItemCategory('');
+      if (user) {
+        await editShoppingListItem(id, editItemName, editItemQuantity, editItemCategory, user.uid);
+        setShoppingList(
+          shoppingList.map((item) => (item.id === id ? { ...item, name: editItemName, quantity: editItemQuantity, category: editItemCategory } : item))
+        );
+        setEditItemId(null);
+        setEditItemName('');
+        setEditItemQuantity(0);
+        setEditItemCategory('');
+      }
     } catch (error) {
       console.error('Error editing item:', error);
     }
@@ -110,8 +119,10 @@ const ShoppingList: React.FC = () => {
   // Delete item
   const handleDeleteItem = async (id: string) => {
     try {
-      await deleteShoppingListItem(id);
-      setShoppingList(shoppingList.filter((item) => item.id !== id));
+      if (user) {
+        await deleteShoppingListItem(id, user.uid);
+        setShoppingList(shoppingList.filter((item) => item.id !== id));
+      }
     } catch (error) {
       console.error('Error deleting item:', error);
     }
@@ -175,7 +186,7 @@ const ShoppingList: React.FC = () => {
                     ) : (
                       <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
                         <Box>
-                          <Typography variant="body1" component="div" sx={{ fontWeight: 'bold', fontSize: '20px' }} >
+                          <Typography variant="body1" component="div" sx={{ fontWeight: 'bold', fontSize: '20px' }}>
                             {item.name}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" className="playwrite-font">

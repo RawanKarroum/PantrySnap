@@ -1,4 +1,5 @@
-'use client'
+// src/pages/Home.tsx
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -25,31 +26,32 @@ import Layout from '../components/Layout';
 import { fetchPantryItems, editPantryItem, deletePantryItem } from '../services/pantryService';
 import { fetchCategories } from '../services/categoryService';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext'; // Import useUser
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: green[700], 
+      main: green[700],
     },
     secondary: {
-      main: brown[500], 
+      main: brown[500],
     },
     error: {
-      main: red[500], 
+      main: red[500],
     },
     background: {
-      default: 'transparent', 
+      default: 'transparent',
     },
     text: {
-      primary: grey[900], 
-      secondary: grey[600], 
+      primary: grey[900],
+      secondary: grey[600],
     },
   },
   typography: {
     fontFamily: 'Roboto, sans-serif',
-    fontSize: 18, 
+    fontSize: 18,
     allVariants: {
-      textTransform: 'capitalize', 
+      textTransform: 'capitalize',
     },
   },
 });
@@ -73,35 +75,43 @@ const Home: React.FC = () => {
   const [editItemName, setEditItemName] = useState<string>('');
   const [editItemQuantity, setEditItemQuantity] = useState<number>(0);
   const [editItemCategory, setEditItemCategory] = useState<string>('');
+  const { user } = useUser(); // Use the useUser hook to get the current user
 
-  // Fetch pantry items and categories
+  // Fetch pantry items
   useEffect(() => {
     const fetchItems = async () => {
-      const items = await fetchPantryItems();
-      setPantry(items);
+      if (user) {
+        const items = await fetchPantryItems(user.uid);
+        setPantry(items);
+      }
     };
     fetchItems();
-  }, []);
+  }, [user]);
 
+  // Fetch categories
   useEffect(() => {
     const fetchCats = async () => {
-      const cats = await fetchCategories();
-      setCategories(cats);
+      if (user) {
+        const cats = await fetchCategories(user.uid);
+        setCategories(cats);
+      }
     };
     fetchCats();
-  }, []);
+  }, [user]);
 
   // Edit existing item
   const handleEditItem = async (id: string) => {
     try {
-      await editPantryItem(id, editItemName, editItemQuantity, editItemCategory);
-      setPantry(
-        pantry.map((item) => (item.id === id ? { ...item, name: editItemName, quantity: editItemQuantity, category: editItemCategory } : item))
-      );
-      setEditItemId(null);
-      setEditItemName('');
-      setEditItemQuantity(0);
-      setEditItemCategory('');
+      if (user) {
+        await editPantryItem(id, editItemName, editItemQuantity, editItemCategory, user.uid);
+        setPantry(
+          pantry.map((item) => (item.id === id ? { ...item, name: editItemName, quantity: editItemQuantity, category: editItemCategory } : item))
+        );
+        setEditItemId(null);
+        setEditItemName('');
+        setEditItemQuantity(0);
+        setEditItemCategory('');
+      }
     } catch (error) {
       console.error('Error editing item:', error);
     }
@@ -110,8 +120,10 @@ const Home: React.FC = () => {
   // Delete item
   const handleDeleteItem = async (id: string) => {
     try {
-      await deletePantryItem(id);
-      setPantry(pantry.filter((item) => item.id !== id));
+      if (user) {
+        await deletePantryItem(id, user.uid);
+        setPantry(pantry.filter((item) => item.id !== id));
+      }
     } catch (error) {
       console.error('Error deleting item:', error);
     }

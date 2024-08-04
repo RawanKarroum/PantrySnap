@@ -1,22 +1,23 @@
-"use client";
+// src/pages/AddPantryItem.tsx
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import {
-  Container,
-  Typography,
   Box,
   TextField,
-  Button,
-  MenuItem,
-  Select,
+  Typography,
   Paper,
+  Button,
   createTheme,
-  ThemeProvider
+  ThemeProvider,
+  MenuItem,
+  Select
 } from '@mui/material';
+import Layout from '../components/Layout';
 import { addPantryItem } from '../services/pantryService';
 import { fetchCategories } from '../services/categoryService';
-import Layout from '../components/Layout';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext'; // Import useUser
 
 const theme = createTheme({
   palette: {
@@ -56,20 +57,25 @@ const AddPantryItem: React.FC = () => {
   const [newQuantity, setNewQuantity] = useState<number>(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const { user } = useUser(); // Use the useUser hook to get the current user
 
   useEffect(() => {
     const fetchCats = async () => {
-      const cats = await fetchCategories();
-      setCategories(cats);
+      if (user) {
+        const cats = await fetchCategories(user.uid);
+        setCategories(cats);
+      }
     };
     fetchCats();
-  }, []);
+  }, [user]);
 
   const handleAddItem = async () => {
-    await addPantryItem(newItem, newQuantity, selectedCategory);
-    setNewItem('');
-    setNewQuantity(0);
-    setSelectedCategory('');
+    if (user) {
+      await addPantryItem(newItem, newQuantity, selectedCategory, user.uid);
+      setNewItem('');
+      setNewQuantity(0);
+      setSelectedCategory('');
+    }
   };
 
   return (
