@@ -8,8 +8,8 @@ import {
   createTheme,
   ThemeProvider,
 } from '@mui/material';
-import Layout from './components/Layout';
-import { fetchPantryItems } from './services/pantryService';
+import Layout from '../components/Layout';
+import { fetchPantryItems } from '../services/pantryService';
 import { green, brown, red, grey } from '@mui/material/colors';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
@@ -66,28 +66,28 @@ const Dashboard: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '32px 0', backgroundColor: 'transparent', width: '100%' }}>
-          <Paper elevation={3} sx={{ padding: 4, borderRadius: '10px', backgroundColor: 'rgba(255, 255, 255, 0.9)', width: '100%', maxWidth: '1000px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '32px 0', backgroundColor: 'transparent', width: '100%' }}>
+          <Paper elevation={3} sx={{ padding: 4, borderRadius: '10px', backgroundColor: 'rgba(255, 255, 255, 0.9)', width: '90%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', padding: 2 }} className="pacifico-font">
               Pantry Dashboard
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Paper elevation={3} sx={{ padding: 2, flex: 1, marginRight: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap' }}>
+              <Paper elevation={3} sx={{ padding: 2, flex: 1, margin: 2 }}>
                 <Typography variant="h6" className="merienda-font">Total Items</Typography>
-                <Typography variant="body1">{totalItems}</Typography>
+                <Typography variant="h4">{totalItems}</Typography>
               </Paper>
-              <Paper elevation={3} sx={{ padding: 2, flex: 1, marginRight: 2 }}>
+              <Paper elevation={3} sx={{ padding: 2, flex: 1, margin: 2 }}>
                 <Typography variant="h6" className="merienda-font">Total Items Quantity</Typography>
-                <Typography variant="body1">{totalQuantity}</Typography>
+                <Typography variant="h4">{totalQuantity}</Typography>
               </Paper>
-              <Paper elevation={3} sx={{ padding: 2, flex: 1 }}>
+              <Paper elevation={3} sx={{ padding: 2, flex: 1, margin: 2 }}>
                 <Typography variant="h6" className="merienda-font">Total Categories</Typography>
-                <Typography variant="body1">{totalCategories}</Typography>
+                <Typography variant="h4">{totalCategories}</Typography>
               </Paper>
             </Box>
-            <Paper elevation={3} sx={{ padding: 2 }}>
+            <Paper elevation={3} sx={{ padding: 2, margin: 2 }}>
               <Typography variant="h6" className="merienda-font">Categories</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                   <Pie
                     data={categoryData}
@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
                     cy="50%"
                     labelLine={false}
                     label={({ name }) => name}
-                    outerRadius={100}
+                    outerRadius={150}
                     fill="#8884d8"
                     dataKey="value"
                   >
