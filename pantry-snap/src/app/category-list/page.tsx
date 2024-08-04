@@ -15,6 +15,7 @@ import { Delete as DeleteIcon } from '@mui/icons-material';
 import Layout from '../components/Layout';
 import { fetchCategories, deleteCategory } from '../services/categoryService';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext';
 
 const theme = createTheme({
   palette: {
@@ -51,19 +52,24 @@ interface Category {
 
 const CategoryList: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const { user } = useUser();
 
   useEffect(() => {
-    const fetchItems = async () => {
-      const items = await fetchCategories();
-      setCategories(items);
-    };
-    fetchItems();
-  }, []);
+    if (user) {
+      const fetchItems = async () => {
+        const items = await fetchCategories(user.uid);
+        setCategories(items);
+      };
+      fetchItems();
+    }
+  }, [user]);
 
   const handleDeleteCategory = async (id: string) => {
     await deleteCategory(id);
-    const items = await fetchCategories();
-    setCategories(items);
+    if (user) {
+      const items = await fetchCategories(user.uid);
+      setCategories(items);
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+// src/pages/AddCategory.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -13,6 +14,7 @@ import {
 import Layout from '../components/Layout';
 import { addCategory } from '../services/categoryService';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext'; 
 
 const theme = createTheme({
   palette: {
@@ -44,10 +46,13 @@ const theme = createTheme({
 
 const AddCategory: React.FC = () => {
   const [newCategory, setNewCategory] = useState<string>('');
+  const { user } = useUser(); 
 
   const handleAddCategory = async () => {
-    await addCategory(newCategory);
-    setNewCategory('');
+    if (user) {
+      await addCategory(newCategory, user.uid); 
+      setNewCategory('');
+    }
   };
 
   return (
