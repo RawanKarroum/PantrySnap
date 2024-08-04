@@ -1,11 +1,9 @@
-// src/pages/Home.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import {
   Box,
   List,
-  ListItem,
   TextField,
   Typography,
   IconButton,
@@ -75,7 +73,8 @@ const Home: React.FC = () => {
   const [editItemName, setEditItemName] = useState<string>('');
   const [editItemQuantity, setEditItemQuantity] = useState<number>(0);
   const [editItemCategory, setEditItemCategory] = useState<string>('');
-  const { user } = useUser(); // Use the useUser hook to get the current user
+  const [searchTerm, setSearchTerm] = useState<string>(''); 
+  const { user } = useUser(); 
 
   // Fetch pantry items
   useEffect(() => {
@@ -129,6 +128,12 @@ const Home: React.FC = () => {
     }
   };
 
+  // Filter items based on search term
+  const filteredItems = pantry.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <Layout>
@@ -137,9 +142,20 @@ const Home: React.FC = () => {
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', padding: 2 }} className="pacifico-font">
               Pantry Items
             </Typography>
+            <TextField
+              variant="outlined"
+              size="small"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              label="Search by name or category"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              InputLabelProps={{ className: 'merienda-label' }}
+              InputProps={{ className: 'merienda-font' }}
+            />
             <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
               <List>
-                {pantry.map((item) => (
+                {filteredItems.map((item) => (
                   <Paper elevation={3} sx={{ mb: 2, p: 2, borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} key={item.id}>
                     {editItemId === item.id ? (
                       <Box display="flex" alignItems="center" width="100%">
