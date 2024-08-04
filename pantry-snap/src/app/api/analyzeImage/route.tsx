@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import * as dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
+
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  // Write the JSON content to a temporary file
+  const tempPath = path.join('/tmp', 'service-account-key.json');
+  fs.writeFileSync(tempPath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = tempPath;
+}
 
 // Create a client using the environment variable for authentication
 const client = new ImageAnnotatorClient();
