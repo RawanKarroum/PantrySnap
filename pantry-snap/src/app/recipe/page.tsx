@@ -18,6 +18,7 @@ import { fetchPantryItems } from '../services/pantryService';
 import { green, brown, red, grey } from '@mui/material/colors';
 import { ArrowBackIos, ArrowForwardIos, Close } from '@mui/icons-material';
 import Layout from '../components/Layout';
+import { useUser } from '../context/UserContext';
 
 const theme = createTheme({
   palette: {
@@ -53,14 +54,17 @@ const RecipeGenerator: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [currentRecipeIndex, setCurrentRecipeIndex] = useState<number>(0);
+  const { user } = useUser(); 
 
   useEffect(() => {
     const fetchItems = async () => {
-      const items = await fetchPantryItems();
-      setPantryItems(items.map(item => item.name));
+      if (user) {
+        const items = await fetchPantryItems(user.uid);
+        setPantryItems(items.map(item => item.name));
+      }
     };
     fetchItems();
-  }, []);
+  }, [user]);
 
   const generateRecipes = async () => {
     setLoading(true);
