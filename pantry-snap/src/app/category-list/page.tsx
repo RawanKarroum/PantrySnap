@@ -78,7 +78,7 @@ const CategoryList: React.FC = () => {
               <List>
                 {categories.map((category) => (
                   <Paper elevation={3} sx={{ mb: 2, p: 2, borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} key={category.id}>
-                    <Typography variant="body1" component="div" sx={{ fontWeight: 'bold', fontSize: '20px' }} className="playwrite-font">
+                    <Typography variant="body1" component="div" sx={{ fontWeight: 'bold', fontSize: '20px' }} className="merienda-font">
                       {category.name}
                     </Typography>
                     <IconButton onClick={() => handleDeleteCategory(category.id)} color="error">

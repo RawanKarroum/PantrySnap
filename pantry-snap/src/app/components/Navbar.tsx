@@ -2,6 +2,9 @@ import React from 'react';
 import { Box, Drawer, List, ListItem, ListItemText, Button, createTheme, ThemeProvider, Paper } from '@mui/material';
 import Link from 'next/link';
 import { green, brown, red, grey } from '@mui/material/colors';
+import { useUser } from '../context/UserContext'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const theme = createTheme({
   palette: {
@@ -29,8 +32,16 @@ const theme = createTheme({
 });
 
 const Navbar: React.FC = () => {
+  const { user, signOut } = useUser();
+  const router = useRouter();
+
+  const signOutUser = () => {
+    signOut();
+    router.push('/login'); 
+  };
+
   const menuItems = [
-    { text: 'Home', path: '/' },
+    { text: 'Home', path: '/home' },
     { text: 'Pantry Item List', path: '/pantry-item-list' },
     { text: 'Add Pantry Item', path: '/add-pantry-item' },
     { text: 'Image Scanner', path: '/image-scanner' },
@@ -41,10 +52,6 @@ const Navbar: React.FC = () => {
     { text: 'Generate Recipes', path: '/recipe' }
   ];
 
-  const handleSignOut = () => {
-    // Handle sign out logic here
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -53,7 +60,7 @@ const Navbar: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           height: '100vh',
-          padding: '16px 0', // Adjust top and bottom padding
+          padding: '16px 0', 
           boxSizing: 'border-box',
         }}
       >
@@ -93,7 +100,7 @@ const Navbar: React.FC = () => {
             </List>
           </Box>
           <Box sx={{ p: 2, width: '80%', mt: 'auto' }}>
-            <Button variant="contained" color="error" fullWidth onClick={handleSignOut} className="merienda-font" >
+            <Button variant="contained" color="error" fullWidth onClick={signOutUser} className="merienda-font" >
               SIGN OUT
             </Button>
           </Box>
