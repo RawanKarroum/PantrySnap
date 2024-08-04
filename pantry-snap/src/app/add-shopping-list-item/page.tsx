@@ -70,7 +70,7 @@ const AddShoppingListItem: React.FC = () => {
   }, [user]);
 
   const handleAddItem = async () => {
-    if (user) {
+    if (user && user.uid) {
       await addShoppingListItem(newItem, newQuantity, selectedCategory, user.uid);
       setNewItem('');
       setNewQuantity(0);

@@ -1,4 +1,3 @@
-// src/pages/AddCategory.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -49,7 +48,7 @@ const AddCategory: React.FC = () => {
   const { user } = useUser(); 
 
   const handleAddCategory = async () => {
-    if (user) {
+    if (user && user.uid) {
       await addCategory(newCategory, user.uid); 
       setNewCategory('');
     }

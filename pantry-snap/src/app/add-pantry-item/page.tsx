@@ -17,7 +17,7 @@ import Layout from '../components/Layout';
 import { addPantryItem } from '../services/pantryService';
 import { fetchCategories } from '../services/categoryService';
 import { green, brown, red, grey } from '@mui/material/colors';
-import { useUser } from '../context/UserContext'; // Import useUser
+import { useUser } from '../context/UserContext'; 
 
 const theme = createTheme({
   palette: {
@@ -57,7 +57,7 @@ const AddPantryItem: React.FC = () => {
   const [newQuantity, setNewQuantity] = useState<number>(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const { user } = useUser(); // Use the useUser hook to get the current user
+  const { user } = useUser(); 
 
   useEffect(() => {
     const fetchCats = async () => {
@@ -70,7 +70,7 @@ const AddPantryItem: React.FC = () => {
   }, [user]);
 
   const handleAddItem = async () => {
-    if (user) {
+    if (user && user.uid) {
       await addPantryItem(newItem, newQuantity, selectedCategory, user.uid);
       setNewItem('');
       setNewQuantity(0);

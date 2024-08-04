@@ -12,6 +12,7 @@ import Layout from '../components/Layout';
 import { fetchPantryItems } from '../services/pantryService';
 import { green, brown, red, grey } from '@mui/material/colors';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { useUser } from '../context/UserContext';
 
 const theme = createTheme({
   palette: {
@@ -43,14 +44,17 @@ const theme = createTheme({
 
 const Dashboard: React.FC = () => {
   const [pantry, setPantry] = useState<any[]>([]);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchItems = async () => {
-      const items = await fetchPantryItems();
-      setPantry(items);
+      if (user && user.uid) {
+        const items = await fetchPantryItems(user.uid);
+        setPantry(items);
+      }
     };
     fetchItems();
-  }, []);
+  }, [user]);
 
   const totalItems = pantry.length;
   const totalQuantity = pantry.reduce((acc, item) => acc + item.quantity, 0);

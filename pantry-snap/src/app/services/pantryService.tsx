@@ -24,7 +24,7 @@ export const fetchPantryItems = async (userId: string): Promise<PantryItem[]> =>
 };
 
 export const addPantryItem = async (newItem: string, newQuantity: number, category: string, userId: string): Promise<void> => {
-  const itemDoc = doc(collection(db, 'pantry'));
+  const itemDoc = doc(db, 'pantry', newItem); 
   await setDoc(itemDoc, { name: newItem, quantity: newQuantity, category: category, userId: userId });
 };
 

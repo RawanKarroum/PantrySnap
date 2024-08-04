@@ -22,7 +22,7 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
 };
 
 export const addCategory = async (newCategory: string, userId: string): Promise<void> => {
-  const categoryDoc = doc(collection(db, 'categories'));
+  const categoryDoc = doc(db, 'categories', newCategory); 
   await setDoc(categoryDoc, { name: newCategory, userId: userId });
 };
 

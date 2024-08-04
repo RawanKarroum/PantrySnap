@@ -25,6 +25,7 @@ import { fetchCategories } from '../services/categoryService';
 import { addPantryItem } from '../services/pantryService';
 import { green, brown, red, grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
+import { useUser } from '../context/UserContext'; 
 
 const theme = createTheme({
   palette: {
@@ -65,14 +66,17 @@ const ImageScanner: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [categories, setCategories] = useState<Array<{ id: string, name: string }>>([]);
+  const { user } = useUser(); // Get the user information
 
   useEffect(() => {
     const fetchCats = async () => {
-      const cats = await fetchCategories();
-      setCategories(cats);
+      if (user && user.uid) {
+        const cats = await fetchCategories(user.uid); // Pass the userId
+        setCategories(cats);
+      }
     };
     fetchCats();
-  }, []);
+  }, [user]);
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files && event.target.files.length > 0) {
@@ -148,9 +152,9 @@ const ImageScanner: React.FC = () => {
 
   const handleSave = async () => {
     const itemName = objects[0]?.name;
-    if (itemName && quantity > 0 && selectedCategory) {
+    if (itemName && quantity > 0 && selectedCategory && user && user.uid) {
       try {
-        await addPantryItem(itemName, quantity, selectedCategory);
+        await addPantryItem(itemName, quantity, selectedCategory, user.uid); // Pass the userId
         console.log('Item added to pantry:', { name: itemName, quantity, category: selectedCategory });
       } catch (error) {
         console.error('Error adding item to pantry:', error);

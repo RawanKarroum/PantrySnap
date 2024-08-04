@@ -25,7 +25,7 @@ export const fetchShoppingListItems = async (userId: string): Promise<ShoppingLi
 };
 
 export const addShoppingListItem = async (newItem: string, newQuantity: number, category: string, userId: string): Promise<void> => {
-  const itemDoc = doc(collection(db, 'shopping-list'));
+  const itemDoc = doc(db, 'shopping-list', newItem); 
   await setDoc(itemDoc, { name: newItem, quantity: newQuantity, category: category, userId: userId });
 };
 
