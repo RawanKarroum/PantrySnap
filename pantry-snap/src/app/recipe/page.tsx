@@ -74,7 +74,7 @@ const RecipeGenerator: React.FC = () => {
       });
       const data = await response.json();
       // Filter out non-recipe content
-      const validRecipes = data.recipes.filter(recipe => recipe.includes('**Ingredients:**') && recipe.includes('**Instructions:**'));
+      const validRecipes = data.recipes.filter((recipe: string) => recipe.includes('**Ingredients:**') && recipe.includes('**Instructions:**'));
       setRecipes(validRecipes);
       setOpen(true);
     } catch (error) {
