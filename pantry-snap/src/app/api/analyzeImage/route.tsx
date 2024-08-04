@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import * as dotenv from 'dotenv';
+import path from 'path';
+
+const credentialsPath = path.resolve('./keys/service-account-key.json');
+process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
 
 dotenv.config();
 
