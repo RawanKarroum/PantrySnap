@@ -1,8 +1,9 @@
+// src/pages/_app.tsx or src/pages/_document.tsx
 'use client';
 
 import { Inter } from 'next/font/google';
-import Head from 'next/head'; 
-import Script from 'next/script'; 
+import Head from 'next/head';
+import Script from 'next/script';
 import './globals.css';
 import { FirebaseAppProvider } from 'reactfire';
 import { firebaseConfig } from './config/Firebase';
@@ -20,19 +21,13 @@ export default function RootLayout({
       <UserProvider>
         <html lang="en">
           <head>
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-P74S6R8LE6"
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script async src="https://www.googletagmanager.com/gtag/js?id=G-ZMEH4KSLPX"></Script>
+            <Script id="google-analytics">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-
-                gtag('config', 'G-P74S6R8LE6', {
-                  page_path: window.location.pathname,
-                });
+                gtag('config', 'G-ZMEH4KSLPX');
               `}
             </Script>
           </head>
